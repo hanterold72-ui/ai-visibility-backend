@@ -1,14 +1,41 @@
 from fastapi import APIRouter, Depends, HTTPException
 from app.auth import User, get_current_user
+from app.config import settings
 from app.models import GeoCheckRequest
 from app.services.geo_tracker import GeoTrackerService
 
 router = APIRouter(prefix="/api/v1/geo", tags=["geo"])
 tracker = GeoTrackerService()
 
+def _auto_engine():
+    if settings.PERPLEXITY_API_KEY:
+        return "perplexity"
+    if settings.GOOGLE_GEMINI_API_KEY:
+        return "gemini"
+    return None
+
+@router.post("/public/check")
+async def public_check(req: GeoCheckRequest):
+    engine = req.engine if req.engine != "auto" else _auto_engine()
+    if not engine or not tracker.is_configured(engine):
+        return {
+            "query": req.query,
+            "target_domain": req.target_domain,
+            "engine": None,
+            "result": {
+                "is_cited": False,
+                "citation_context": None,
+                "source_url": None,
+                "raw_answer_snippet": "AI-провайдер не настроен. Добавьте ключ Gemini или Perplexity в Render.",
+            },
+        }
+    result = await tracker.check(req.query, req.target_domain, engine)
+    return {"query": req.query, "target_domain": req.target_domain, "engine": engine, "result": result.dict()}
+
 @router.post("/check")
 async def geo_check(req: GeoCheckRequest, user: User = Depends(get_current_user)):
-    if not tracker.is_configured(req.engine):
-        raise HTTPException(500, f"AI provider for {req.engine} not configured")
-    result = await tracker.check(req.query, req.target_domain, req.engine)
-    return {"query": req.query, "target_domain": req.target_domain, "engine": req.engine, "result": result.dict()}
+    engine = req.engine if req.engine != "auto" else (_auto_engine() or "perplexity")
+    if not tracker.is_configured(engine):
+        raise HTTPException(500, f"AI provider for {engine} not configured")
+    result = await tracker.check(req.query, req.target_domain, engine)
+    return {"query": req.query, "target_domain": req.target_domain, "engine": engine, "result": result.dict()}
