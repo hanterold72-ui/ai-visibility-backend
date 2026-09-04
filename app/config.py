@@ -7,11 +7,17 @@ class Settings(BaseSettings):
     SERVICE_API_KEY: str = "change-me"
     JWT_SECRET: str = "change-me-32-chars-minimum"
     AUTO_CREATE_TABLES: bool = True
+    
+    # Infra
     DATABASE_URL: str = ""
-    REDIS_URL: str = "redis://localhost:6379/0"
+    REDIS_URL: str = ""  # Необязательно для бесплатного стека
+    
+    # AI Providers
     PERPLEXITY_API_KEY: str = ""
     OPENAI_API_KEY: str = ""
     GOOGLE_GEMINI_API_KEY: str = ""
+    
+    # Payments (опционально)
     STRIPE_SECRET_KEY: str = ""
     STRIPE_WEBHOOK_SECRET: str = ""
     STRIPE_PRICE_STARTER: str = ""
