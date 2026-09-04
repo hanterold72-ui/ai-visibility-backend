@@ -29,7 +29,6 @@ async def lifespan(app: FastAPI):
         except Exception as e:
             err = str(e)
             if "already exists" in err or "duplicate key" in err:
-                # Таблицы созданы параллельным воркером — это НЕ ошибка
                 startup_error = None
             else:
                 startup_error = f"DB ERROR → {type(e).__name__}: {e}"
