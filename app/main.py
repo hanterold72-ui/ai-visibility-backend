@@ -2,12 +2,11 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import traceback
+import os
 
 startup_error = None
 debug_info = []
 _routers = []
-
-# Глобальные переменные для lifespan
 _settings = None
 _engine = None
 _Base = None
@@ -39,7 +38,7 @@ try:
     
     _routers = [auth.router, geo.router, audit.router,
                 promotion.router, billing.router, admin_api.router]
-    debug_info.append(f"SUCCESS: {_routers} routers loaded")
+    debug_info.append(f"SUCCESS: {len(_routers)} routers loaded")
     
 except Exception as e:
     startup_error = f"IMPORT ERROR at step: {debug_info[-1] if debug_info else 'unknown'} → {type(e).__name__}: {e}"
@@ -79,10 +78,29 @@ for r in _routers:
 async def health():
     payload = {
         "status": "healthy",
-        "version": "1.3.0-debug",
+        "version": "1.4.0-debug",
         "routers_loaded": len(_routers),
         "debug_info": debug_info
     }
     if startup_error:
         payload["startup_error"] = startup_error
     return payload
+
+@app.get("/debug/files")
+async def debug_files():
+    """Показывает структуру файлов внутри контейнера"""
+    result = {}
+    
+    # Проверяем app/
+    result["app_dir_exists"] = os.path.isdir("/app/app")
+    result["app_contents"] = os.listdir("/app/app") if os.path.isdir("/app/app") else []
+    
+    # Проверяем app/routers/
+    result["routers_dir_exists"] = os.path.isdir("/app/app/routers")
+    result["routers_contents"] = os.listdir("/app/app/routers") if os.path.isdir("/app/app/routers") else []
+    
+    # Проверяем текущую директорию
+    result["cwd"] = os.getcwd()
+    result["cwd_contents"] = os.listdir(".")
+    
+    return result
