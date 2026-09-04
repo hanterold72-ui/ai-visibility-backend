@@ -17,7 +17,7 @@ app = FastAPI(title=settings.APP_NAME, version="1.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.FRONTEND_URL.split(","),
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -29,6 +29,15 @@ app.include_router(audit.router)
 app.include_router(promotion.router)
 app.include_router(billing.router)
 app.include_router(admin_api.router)
+
+@app.get("/")
+async def root():
+    return {
+        "service": "AI-Visibility API",
+        "status": "running 🚀",
+        "docs": "/docs",
+        "health": "/health",
+    }
 
 @app.get("/health")
 async def health():
