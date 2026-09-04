@@ -38,7 +38,6 @@ services:
   - type: pserv
     name: geo-db
     plan: free
-    databaseName: geoseo
 
   - type: redis
     name: geo-redis
