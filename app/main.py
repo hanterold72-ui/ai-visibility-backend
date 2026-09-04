@@ -25,8 +25,14 @@ async def lifespan(app: FastAPI):
         try:
             async with engine.begin() as conn:
                 await conn.run_sync(Base.metadata.create_all)
+            startup_error = None
         except Exception as e:
-            startup_error = f"DB ERROR → {type(e).__name__}: {e}"
+            err = str(e)
+            if "already exists" in err or "duplicate key" in err:
+                # Таблицы созданы параллельным воркером — это НЕ ошибка
+                startup_error = None
+            else:
+                startup_error = f"DB ERROR → {type(e).__name__}: {e}"
     yield
 
 app = FastAPI(title="AI-Visibility Platform", version="1.0.0", lifespan=lifespan)
@@ -45,7 +51,7 @@ for r in _routers:
 @app.get("/")
 @app.get("/health")
 async def health():
-    payload = {"status": "healthy", "version": "1.1.0-debug"}
+    payload = {"status": "healthy", "version": "1.2.0"}
     if startup_error:
         payload["startup_error"] = startup_error
     return payload
