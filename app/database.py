@@ -2,10 +2,13 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, Asyn
 from sqlalchemy.orm import DeclarativeBase
 from app.config import settings
 
-# Поддержка и postgresql:// и postgres:// (Neon даёт postgres://)
+# Конвертируем URL и чиним параметры под asyncpg
 url = settings.DATABASE_URL
 url = url.replace("postgresql://", "postgresql+asyncpg://")
 url = url.replace("postgres://", "postgresql+asyncpg://")
+url = url.replace("sslmode=require", "ssl=require")          # ← главное исправление
+url = url.replace("&channel_binding=require", "")            # ← asyncpg это тоже не любит
+url = url.replace("?channel_binding=require", "")
 
 engine = create_async_engine(
     url,
