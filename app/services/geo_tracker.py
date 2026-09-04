@@ -46,7 +46,7 @@ class GeoTrackerService:
         )
 
     async def check_gemini(self, query: str, target_domain: str) -> CitationResult:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={settings.GOOGLE_GEMINI_API_KEY}"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={settings.GOOGLE_GEMINI_API_KEY}"
         payload = {
             "contents": [{"parts": [{"text": query}]}],
             "tools": [{"google_search": {}}],
