@@ -1,8 +1,7 @@
 from datetime import datetime
 from typing import Optional
-from enum import Enum
 from pydantic import BaseModel, Field
-from sqlalchemy import String, Text, Boolean, DateTime, ForeignKey, JSON, Integer
+from sqlalchemy import String, Text, Boolean, ForeignKey, JSON
 from sqlalchemy.orm import Mapped, mapped_column
 from app.database import Base
 
@@ -46,13 +45,10 @@ class CitationTracking(Base):
     citation_context: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     checked_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
 
-class SearchEngine(str, Enum):
-    PERPLEXITY = "perplexity"
-
 class GeoCheckRequest(BaseModel):
     query: str = Field(..., min_length=3, max_length=500)
     target_domain: str
-    engine: SearchEngine = SearchEngine.PERPLEXITY
+    engine: str = "auto"
 
 class AuditRequest(BaseModel):
     domain: str
