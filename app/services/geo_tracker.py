@@ -2,7 +2,7 @@ import re
 import httpx
 from app.config import settings
 
-GEMINI_MODELS = ["gemini-3.8-flash", "gemini-3.6-flash", "gemini-3.7-flash"]
+GEMINI_MODELS = ["gemini-3.6-flash", "gemini-3.1-flash", "gemini-2.5-flash"]
 
 class CitationResult:
     def __init__(self, is_cited, citation_context=None, source_url=None, raw_answer_snippet="", engine_used=None):
